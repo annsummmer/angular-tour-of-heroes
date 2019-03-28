@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Hero } from 'src/app/hero';
 import { HeroService } from 'src/app/hero.service';
 
@@ -9,9 +9,8 @@ import { HeroService } from 'src/app/hero.service';
 })
 export class HeroesComponent implements OnInit {
 
+  @ViewChild('heroName') heroName: ElementRef;
   heroes: Hero[];
-
-  selectedHero: Hero;
 
   constructor(
     private heroService: HeroService,
@@ -26,9 +25,20 @@ export class HeroesComponent implements OnInit {
       .subscribe(res => this.heroes = res);
   }
 
-  onSelect(hero: Hero): void {
-    this.selectedHero = hero;
-    console.log(this.selectedHero);
+  addHero() {
+    const name = this.heroName.nativeElement.value.trim();
+    if (!name) { return; }
+    this.heroName.nativeElement.value = '';
+    this.heroService.addHero({name} as Hero)
+      .subscribe(hero => this.heroes.push(hero));
   }
 
+  deleteHero(hero: Hero) {
+    console.log(hero);
+    this.heroService.deleteHero(hero)
+      .subscribe(heroToDelete => {
+        const index = this.heroes.findIndex(heroToDelete => heroToDelete.id === hero.id);
+        this.heroes.splice(index, 1);
+      });
+  }
 }
